@@ -1,0 +1,7 @@
+[
+  "tests/test_rag.py::test_chunker_and_deduplication",
+  "tests/test_rag.py::test_document_loader",
+  "tests/test_rag.py::test_evaluator_metrics",
+  "tests/test_rag.py::test_llm_generator",
+  "tests/test_rag.py::test_vector_db_operations"
+]

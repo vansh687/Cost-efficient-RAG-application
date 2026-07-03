@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cost-Efficient RAG System Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --card-bg: #151c2c;
+            --accent-color: #4f46e5;
+            --accent-hover: #6366f1;
+            --text-color: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --border-color: #1f2937;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        header {
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 20px;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #818cf8, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s ease, border-color 0.2s ease;
+        }
+
+        .card:hover {
+            border-color: var(--accent-hover);
+        }
+
+        h2 {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"], textarea, select {
+            width: 100%;
+            padding: 12px;
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-color);
+            font-family: inherit;
+            font-size: 1rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        input[type="text"]:focus, textarea:focus, select:focus {
+            border-color: var(--accent-color);
+        }
+
+        .btn {
+            background-color: var(--accent-color);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color 0.2s ease;
+        }
+
+        .file-upload-wrapper:hover {
+            border-color: var(--accent-color);
+        }
+
+        .file-upload-wrapper input[type="file"] {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .console-output {
+            background-color: #05070c;
+            border-radius: 8px;
+            padding: 16px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #38bdf8;
+            max-height: 350px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            white-space: pre-wrap;
+        }
+
+        .status-badge {
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+        }
+        
+        .status-online { background-color: rgba(16, 185, 129, 0.2); color: var(--success); }
+        .status-offline { background-color: rgba(239, 68, 68, 0.2); color: var(--error); }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-top: 15px;
+        }
+
+        .metric-box {
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .metric-val {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--success);
+            margin-top: 4px;
+        }
+
+        .citation-item {
+            background-color: rgba(79, 70, 229, 0.1);
+            border-left: 3px solid var(--accent-color);
+            padding: 8px 12px;
+            border-radius: 0 8px 8px 0;
+            margin-top: 8px;
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div>
+            <h1>Cost-Efficient RAG System</h1>
+            <p style="color: var(--text-secondary); margin-top: 4px;">Modular QA pipeline with persistent ChromaDB</p>
+        </div>
+        <div>
+            <span id="sys-status" class="status-badge status-offline">Connecting...</span>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- Ingestion Panel -->
+        <div class="card">
+            <h2>Ingest Document</h2>
+            <p style="color: var(--text-secondary); margin-bottom: 20px; font-size: 0.9rem;">
+                Upload a document (PDF, HTML, MD, or TXT) to split and index into the vector database.
+            </p>
+            <form id="ingest-form">
+                <div class="form-group">
+                    <div class="file-upload-wrapper">
+                        <p id="file-label">Drag & drop or click to upload file</p>
+                        <input type="file" id="file-input" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn">🚀 Ingest Document</button>
+            </form>
+            <div id="ingest-metrics" class="metrics-grid" style="display: none;">
+                <div class="metric-box">
+                    <div>Chunks Inserted</div>
+                    <div id="chunks-ins" class="metric-val">0</div>
+                </div>
+                <div class="metric-box">
+                    <div>Chunks Skipped</div>
+                    <div id="chunks-skip" class="metric-val">0</div>
+                </div>
+                <div class="metric-box">
+                    <div>Latency</div>
+                    <div id="ingest-latency" class="metric-val">0 ms</div>
+                </div>
+                <div class="metric-box">
+                    <div>Est. Cost (USD)</div>
+                    <div id="ingest-cost" class="metric-val">$0.00</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Query Panel -->
+        <div class="card">
+            <h2>Query System</h2>
+            <form id="query-form">
+                <div class="form-group">
+                    <label for="query-input">Ask a Question</label>
+                    <input type="text" id="query-input" placeholder="e.g. What is the role of document loaders?" required>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 18px;">
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="top-k">Top K</label>
+                        <select id="top-k">
+                            <option value="3">3</option>
+                            <option value="5" selected>5</option>
+                            <option value="8">8</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label for="thresh">Similarity Threshold</label>
+                        <select id="thresh">
+                            <option value="0.2">0.2</option>
+                            <option value="0.3" selected>0.3</option>
+                            <option value="0.5">0.5</option>
+                        </select>
+                    </div>
+                </div>
+                <button type="submit" class="btn">🧠 Submit Query</button>
+            </form>
+
+            <div id="query-metrics" class="metrics-grid" style="display: none; margin-bottom: 20px;">
+                <div class="metric-box">
+                    <div>Tokens Used</div>
+                    <div id="tokens-used" class="metric-val">0</div>
+                </div>
+                <div class="metric-box">
+                    <div>Est. Cost (USD)</div>
+                    <div id="query-cost" class="metric-val">$0.00</div>
+                </div>
+                <div class="metric-box">
+                    <div>Total Latency</div>
+                    <div id="query-latency" class="metric-val">0 ms</div>
+                </div>
+                <div class="metric-box">
+                    <div>Chunks Found</div>
+                    <div id="chunks-found" class="metric-val">0</div>
+                </div>
+            </div>
+
+            <div id="answer-container" style="display: none; margin-top: 20px;">
+                <h3 style="margin-bottom: 8px;">Answer</h3>
+                <p id="answer-text" style="background-color: var(--border-color); padding: 16px; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; margin-bottom: 15px;"></p>
+                <h3 style="margin-bottom: 8px;">Citations</h3>
+                <div id="citations-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container" style="margin-top: 30px; grid-template-columns: 1fr;">
+        <div class="card">
+            <h2>Console Logs & Diagnostics</h2>
+            <div id="console" class="console-output">System initialized... waiting for operations.</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = "http://127.0.0.1:8000";
+        const consoleEl = document.getElementById("console");
+
+        function log(message) {
+            consoleEl.innerText += `\n[${new Date().toLocaleTimeString()}] ${message}`;
+            consoleEl.scrollTop = consoleEl.scrollHeight;
+        }
+
+        // Check backend server connection
+        async function checkConnection() {
+            try {
+                const response = await fetch(`${API_URL}/`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const badge = document.getElementById("sys-status");
+                    badge.innerText = `Online (${data.llm_provider.toUpperCase()})`;
+                    badge.className = "status-badge status-online";
+                    log("Connected to FastAPI Backend Server.");
+                }
+            } catch (err) {
+                const badge = document.getElementById("sys-status");
+                badge.innerText = "Offline";
+                badge.className = "status-badge status-offline";
+                log("Error: Cannot connect to FastAPI Backend Server.");
+            }
+        }
+
+        // File Selection label binding
+        const fileInput = document.getElementById("file-input");
+        fileInput.addEventListener("change", () => {
+            if (fileInput.files.length > 0) {
+                document.getElementById("file-label").innerText = `Selected: ${fileInput.files[0].name}`;
+            }
+        });
+
+        // Ingest Document handler
+        document.getElementById("ingest-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const file = fileInput.files[0];
+            if (!file) return;
+
+            const formData = new FormData();
+            formData.append("file", file);
+
+            log(`Starting ingestion of ${file.name}...`);
+            try {
+                const response = await fetch(`${API_URL}/ingest`, {
+                    method: "POST",
+                    body: formData
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`Ingested successfully: ${result.message}`);
+                    
+                    document.getElementById("chunks-ins").innerText = result.inserted_chunks;
+                    document.getElementById("chunks-skip").innerText = result.skipped_chunks;
+                    document.getElementById("ingest-latency").innerText = `${result.latency_ms} ms`;
+                    document.getElementById("ingest-cost").innerText = `$${result.estimated_cost_usd.toFixed(6)}`;
+                    document.getElementById("ingest-metrics").style.display = "grid";
+                } else {
+                    const err = await response.json();
+                    log(`Failed to ingest document: ${err.detail || response.statusText}`);
+                }
+            } catch (err) {
+                log(`Network error during ingestion: ${err.message}`);
+            }
+        });
+
+        // Query submit handler
+        document.getElementById("query-form").addEventListener("submit", async (e) => {
+            e.preventDefault();
+            const query = document.getElementById("query-input").value;
+            const topK = parseInt(document.getElementById("top-k").value);
+
+            log(`Submitting question: "${query}" (Top-K: ${topK})...`);
+            try {
+                const response = await fetch(`${API_URL}/ask`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ question: query, top_k: topK })
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    log(`Received response successfully.`);
+
+                    // Show metrics
+                    document.getElementById("tokens-used").innerText = result.token_usage.prompt_tokens + result.token_usage.completion_tokens;
+                    document.getElementById("query-cost").innerText = `$${result.estimated_cost_usd.toFixed(6)}`;
+                    document.getElementById("query-latency").innerText = `${result.latency_metrics.total_ms} ms`;
+                    document.getElementById("chunks-found").innerText = result.retrieved_chunks.length;
+                    document.getElementById("query-metrics").style.display = "grid";
+
+                    // Show answers
+                    document.getElementById("answer-text").innerText = result.answer;
+                    
+                    // Show citations
+                    const citationList = document.getElementById("citations-list");
+                    citationList.innerHTML = "";
+                    if (result.citations.length === 0) {
+                        citationList.innerHTML = `<div style="color: var(--text-secondary); font-size: 0.9rem;">No citations referenced.</div>`;
+                    } else {
+                        result.citations.forEach(cit => {
+                            const citDiv = document.createElement("div");
+                            citDiv.className = "citation-item";
+                            citDiv.innerHTML = `<strong>${cit.source}</strong> (Page: ${cit.page || 'N/A'}): <em>"${cit.snippet}"</em>`;
+                            citationList.appendChild(citDiv);
+                        });
+                    }
+                    document.getElementById("answer-container").style.display = "block";
+
+                } else {
+                    const err = await response.json();
+                    log(`Failed query: ${err.detail || response.statusText}`);
+                }
+            } catch (err) {
+                log(`Network error during query: ${err.message}`);
+            }
+        });
+
+        checkConnection();
+    </script>
+</body>
+</html>
